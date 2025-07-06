@@ -44,7 +44,10 @@ jobs:
           context: ./backend
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/koumi15cancer/deployment_demo/backend-v1:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/backend-v1:latest
+          build-args: |
+            SERVICE_NAME=backend-v1
+            SERVICE_VERSION=1.0
 
       - name: Build and push backend-v2
         uses: docker/build-push-action@v5
@@ -52,7 +55,10 @@ jobs:
           context: ./backend
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/koumi15cancer/deployment_demo/backend-v1:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/backend-v2:latest
+          build-args: |
+            SERVICE_NAME=backend-v2
+            SERVICE_VERSION=2.0
 
       - name: Set output
         id: set_output
