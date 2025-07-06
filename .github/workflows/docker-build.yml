@@ -22,7 +22,6 @@ env:
 jobs:
   build-backend:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'backend') || (github.event_name == 'pull_request' && contains(join(github.event.pull_request.changed_files.*.filename, ','), 'backend/'))
     outputs:
       backend_built: ${{ steps.set_output.outputs.backend_built }}
     steps:
@@ -61,7 +60,6 @@ jobs:
 
   build-nginx:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'nginx') || (github.event_name == 'pull_request' && contains(join(github.event.pull_request.changed_files.*.filename, ','), 'nginx/'))
     outputs:
       nginx_built: ${{ steps.set_output.outputs.nginx_built }}
     steps:
