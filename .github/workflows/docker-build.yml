@@ -119,7 +119,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
       - name: Redeploy backend-v1
-        run: railway redeploy -s backend-v1
+        run: railway redeploy -s backend-v1  --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -131,7 +131,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
       - name: Redeploy backend-v2
-        run: railway redeploy -s backend-v2
+        run: railway redeploy -s backend-v2  --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -143,6 +143,6 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
       - name: Redeploy nginx
-        run: railway redeploy -s nginx
+        run: railway redeploy -s nginx  --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

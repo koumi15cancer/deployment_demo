@@ -108,3 +108,5 @@ temp/
 
 # Local development
 *.local
+
+.envrc

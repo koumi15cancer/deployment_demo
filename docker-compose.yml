@@ -1,0 +1,70 @@
+networks:
+  app-network:
+    driver: bridge
+    name: app-network
+
+services:
+  backend-v1:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-v1
+    environment:
+      - SERVICE_NAME=backend-v1
+      - SERVICE_VERSION=1.0
+      - PORT=8080
+    expose:
+      - "8080"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/hello"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  backend-v2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-v2
+    environment:
+      - SERVICE_NAME=backend-v2
+      - SERVICE_VERSION=2.0
+      - PORT=8080
+    expose:
+      - "8080"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/hello"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-v1
+      - backend-v2
+    networks:
+      - app-network
+    environment:
+      - SPLIT_PERCENTAGE=30
+      - BACKEND_V1_HOST=backend-v1
+      - BACKEND_V1_PORT=8080
+      - BACKEND_V2_HOST=backend-v2
+      - BACKEND_V2_PORT=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/test"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
