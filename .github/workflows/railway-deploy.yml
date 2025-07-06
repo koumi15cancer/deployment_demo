@@ -44,9 +44,8 @@ jobs:
             SERVICE_VERSION=1.0
 
       - name: Install Railway CLI
-        uses: railwayapp/cli-action@v1
-        with:
-          token: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          npm install -g @railway/cli
 
       - name: Deploy backend-v1 to Railway
         run: |
@@ -85,9 +84,8 @@ jobs:
             SERVICE_VERSION=2.0
 
       - name: Install Railway CLI
-        uses: railwayapp/cli-action@v1
-        with:
-          token: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          npm install -g @railway/cli
 
       - name: Deploy backend-v2 to Railway
         run: |
