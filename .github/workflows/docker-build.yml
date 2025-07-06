@@ -6,13 +6,13 @@ on:
     paths:
       - 'backend/**'
       - 'nginx/**'
-      - '.github/workflows/docker-build.yml'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main, master ]
     paths:
       - 'backend/**'
       - 'nginx/**'
-      - '.github/workflows/docker-build.yml'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 env:
@@ -20,8 +20,29 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-backend:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      nginx: ${{ steps.filter.outputs.nginx }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            nginx:
+              - 'nginx/**'
+            workflows:
+              - '.github/workflows/**'
+
+  build-backend:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.workflows == 'true'
     outputs:
       backend_built: ${{ steps.set_output.outputs.backend_built }}
     steps:
@@ -34,9 +55,9 @@ jobs:
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN_ACESS }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push backend-v1
         uses: docker/build-push-action@v5
@@ -44,10 +65,7 @@ jobs:
           context: ./backend
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/backend-v1:latest
-          build-args: |
-            SERVICE_NAME=backend-v1
-            SERVICE_VERSION=1.0
+          tags: ghcr.io/koumi15cancer/deployment_demo/backend-v1:latest
 
       - name: Build and push backend-v2
         uses: docker/build-push-action@v5
@@ -55,17 +73,16 @@ jobs:
           context: ./backend
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/backend-v2:latest
-          build-args: |
-            SERVICE_NAME=backend-v2
-            SERVICE_VERSION=2.0
+          tags: ghcr.io/koumi15cancer/deployment_demo/backend-v2:latest
 
       - name: Set output
         id: set_output
         run: echo "backend_built=true" >> $GITHUB_OUTPUT
 
   build-nginx:
+    needs: changes
     runs-on: ubuntu-latest
+    if: needs.changes.outputs.nginx == 'true' || needs.changes.outputs.workflows == 'true'
     outputs:
       nginx_built: ${{ steps.set_output.outputs.nginx_built }}
     steps:
@@ -78,9 +95,9 @@ jobs:
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.TOKEN_ACESS }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push nginx
         uses: docker/build-push-action@v5
@@ -88,7 +105,7 @@ jobs:
           context: ./nginx
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/koumi15cancer/deployment_demo-nginx:latest
+          tags: ghcr.io/koumi15cancer/deployment_demo/nginx:latest
 
       - name: Set output
         id: set_output
@@ -102,7 +119,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
       - name: Redeploy backend-v1
-        run: railway redeploy -s backend-v1 --yes
+        run: railway redeploy -s backend-v1
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -114,7 +131,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
       - name: Redeploy backend-v2
-        run: railway redeploy -s backend-v2 --yes
+        run: railway redeploy -s backend-v2
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -126,6 +143,6 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
       - name: Redeploy nginx
-        run: railway redeploy -s nginx --yes
+        run: railway redeploy -s nginx
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
