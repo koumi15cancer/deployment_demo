@@ -1,4 +1,4 @@
-name: Build and Push Docker Images
+name: Build, Push, and Redeploy Services
 
 on:
   push:
@@ -22,7 +22,9 @@ env:
 jobs:
   build-backend:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'backend') || github.event_name == 'pull_request' && contains(join(github.event.pull_request.changed_files.*.filename, ','), 'backend/') }}
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'backend') || (github.event_name == 'pull_request' && contains(join(github.event.pull_request.changed_files.*.filename, ','), 'backend/'))
+    outputs:
+      backend_built: ${{ steps.set_output.outputs.backend_built }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,7 +39,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push backend
+      - name: Build and push backend-v1
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -45,9 +47,23 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}-backend-v1:latest
 
+      - name: Build and push backend-v2
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}-backend-v2:latest
+
+      - name: Set output
+        id: set_output
+        run: echo "backend_built=true" >> $GITHUB_OUTPUT
+
   build-nginx:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'nginx') || github.event_name == 'pull_request' && contains(join(github.event.pull_request.changed_files.*.filename, ','), 'nginx/') }}
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'nginx') || (github.event_name == 'pull_request' && contains(join(github.event.pull_request.changed_files.*.filename, ','), 'nginx/'))
+    outputs:
+      nginx_built: ${{ steps.set_output.outputs.nginx_built }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -69,3 +85,43 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}-nginx:latest
+
+      - name: Set output
+        id: set_output
+        run: echo "nginx_built=true" >> $GITHUB_OUTPUT
+
+  redeploy-backend-v1:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    if: needs.build-backend.outputs.backend_built == 'true'
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Redeploy backend-v1
+        run: railway redeploy -s backend-v1
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  redeploy-backend-v2:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    if: needs.build-backend.outputs.backend_built == 'true'
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Redeploy backend-v2
+        run: railway redeploy -s backend-v2
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  redeploy-nginx:
+    needs: build-nginx
+    runs-on: ubuntu-latest
+    if: needs.build-nginx.outputs.nginx_built == 'true'
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Redeploy nginx
+        run: railway redeploy -s nginx
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
