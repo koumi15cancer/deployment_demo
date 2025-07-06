@@ -54,6 +54,19 @@ func main() {
 	// HTTP router
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		response := Response{
+			Message:     "Default Page " + serviceName,
+			Version:     serviceVersion,
+			ServiceName: serviceName,
+		}
+		log.Printf("Sending response: %+v", response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		}
+	})
+
 	// Unified /hello endpoint for canary deployment
 	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
