@@ -57,7 +57,7 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		response := Response{
-			Message:     "Default Page " + serviceName,
+			Message:     "Default Page return " + serviceName,
 			Version:     serviceVersion,
 			ServiceName: serviceName,
 		}
