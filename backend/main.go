@@ -62,10 +62,7 @@ func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
 		if os.Getenv("SHADOW_MODE") == "true" {
-			if authHeader := r.Header.Get("Authorization"); authHeader != "" {
-				r.Header.Set("Authorization", "Bearer shadow-token")
-				log.Println("Shadow mode: Replaced PROD token with shadow-token")
-			}
+			w.Header().Set("X-Shadow-Backend", "true")
 		}
 		next.ServeHTTP(w, r)
 	})
