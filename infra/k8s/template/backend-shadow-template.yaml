@@ -1,0 +1,94 @@
+---
+kind: "Template"
+apiVersion: "v1"
+metadata:
+  name: "backend-shadow"
+  annotations:
+    description: "Template for backend-shadow deployment and service"
+labels:
+  template: "backend-shadow-template"
+objects:
+  - kind: "Service"
+    apiVersion: "v1"
+    metadata:
+      name: "$(BACKEND_SHADOW_NAME)"
+      namespace: "$(BACKEND_SHADOW_NAMESPACE)"
+    spec:
+      selector:
+        app: "$(BACKEND_SHADOW_NAME)"
+      ports:
+        - protocol: "TCP"
+          port: $((BACKEND_SHADOW_SERVICE_PORT))
+          targetPort: $((BACKEND_SHADOW_CONTAINER_PORT))
+  - kind: "Deployment"
+    apiVersion: "apps/v1"
+    metadata:
+      name: "$(BACKEND_SHADOW_NAME)"
+      namespace: "$(BACKEND_SHADOW_NAMESPACE)"
+    spec:
+      replicas: $((BACKEND_SHADOW_REPLICAS))
+      selector:
+        matchLabels:
+          app: "$(BACKEND_SHADOW_NAME)"
+      template:
+        metadata:
+          labels:
+            app: "$(BACKEND_SHADOW_NAME)"
+        spec:
+          containers:
+            - name: "$(BACKEND_SHADOW_CONTAINER_NAME)"
+              image: "$(BACKEND_SHADOW_CONTAINER_IMAGE)"
+              ports:
+                - containerPort: $((BACKEND_SHADOW_CONTAINER_PORT))
+              resources:
+                requests:
+                  memory: "$(BACKEND_SHADOW_CONTAINER_REQUESTS_MEMORY)"
+                  cpu: "$(BACKEND_SHADOW_CONTAINER_REQUESTS_CPU)"
+                limits:
+                  memory: "$(BACKEND_SHADOW_CONTAINER_LIMITS_MEMORY)"
+                  cpu: "$(BACKEND_SHADOW_CONTAINER_LIMITS_CPU)"
+parameters:
+  - name: "BACKEND_SHADOW_NAME"
+    description: "Name of the backend-shadow service and deployment"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_NAMESPACE"
+    description: "Namespace for backend-shadow"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_REPLICAS"
+    description: "Number of replicas for backend-shadow"
+    required: true
+    parameterType: "int"
+  - name: "BACKEND_SHADOW_CONTAINER_NAME"
+    description: "Container name"
+    required: true
+    parameterType: "int"
+  - name: "BACKEND_SHADOW_CONTAINER_IMAGE"
+    description: "Container image"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_CONTAINER_PORT"
+    description: "Container port"
+    required: true
+    parameterType: "int"
+  - name: "BACKEND_SHADOW_CONTAINER_REQUESTS_MEMORY"
+    description: "Memory requests"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_CONTAINER_REQUESTS_CPU"
+    description: "CPU requests"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_CONTAINER_LIMITS_MEMORY"
+    description: "Memory limits"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_CONTAINER_LIMITS_CPU"
+    description: "CPU limits"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_SHADOW_SERVICE_PORT"
+    description: "Service port"
+    required: true
+    parameterType: "int" 

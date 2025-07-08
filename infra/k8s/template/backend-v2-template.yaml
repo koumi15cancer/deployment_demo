@@ -1,0 +1,94 @@
+---
+kind: "Template"
+apiVersion: "v1"
+metadata:
+  name: "backend-v2"
+  annotations:
+    description: "Template for backend-v2 deployment and service"
+labels:
+  template: "backend-v2-template"
+objects:
+  - kind: "Service"
+    apiVersion: "v1"
+    metadata:
+      name: "$(BACKEND_V2_NAME)"
+      namespace: "$(BACKEND_V2_NAMESPACE)"
+    spec:
+      selector:
+        app: "$(BACKEND_V2_NAME)"
+      ports:
+        - protocol: "TCP"
+          port: $((BACKEND_V2_SERVICE_PORT))
+          targetPort: $((BACKEND_V2_CONTAINER_PORT))
+  - kind: "Deployment"
+    apiVersion: "apps/v1"
+    metadata:
+      name: "$(BACKEND_V2_NAME)"
+      namespace: "$(BACKEND_V2_NAMESPACE)"
+    spec:
+      replicas: $((BACKEND_V2_REPLICAS))
+      selector:
+        matchLabels:
+          app: "$(BACKEND_V2_NAME)"
+      template:
+        metadata:
+          labels:
+            app: "$(BACKEND_V2_NAME)"
+        spec:
+          containers:
+            - name: "$(BACKEND_V2_CONTAINER_NAME)"
+              image: "$(BACKEND_V2_CONTAINER_IMAGE)"
+              ports:
+                - containerPort: $((BACKEND_V2_CONTAINER_PORT))
+              resources:
+                requests:
+                  memory: "$(BACKEND_V2_CONTAINER_REQUESTS_MEMORY)"
+                  cpu: "$(BACKEND_V2_CONTAINER_REQUESTS_CPU)"
+                limits:
+                  memory: "$(BACKEND_V2_CONTAINER_LIMITS_MEMORY)"
+                  cpu: "$(BACKEND_V2_CONTAINER_LIMITS_CPU)"
+parameters:
+  - name: "BACKEND_V2_NAME"
+    description: "Name of the backend-v2 service and deployment"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_NAMESPACE"
+    description: "Namespace for backend-v2"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_REPLICAS"
+    description: "Number of replicas for backend-v2"
+    required: true
+    parameterType: "int"
+  - name: "BACKEND_V2_CONTAINER_NAME"
+    description: "Container name"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_CONTAINER_IMAGE"
+    description: "Container image"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_CONTAINER_PORT"
+    description: "Container port"
+    required: true
+    parameterType: "int"
+  - name: "BACKEND_V2_CONTAINER_REQUESTS_MEMORY"
+    description: "Memory requests"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_CONTAINER_REQUESTS_CPU"
+    description: "CPU requests"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_CONTAINER_LIMITS_MEMORY"
+    description: "Memory limits"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_CONTAINER_LIMITS_CPU"
+    description: "CPU limits"
+    required: true
+    parameterType: "string"
+  - name: "BACKEND_V2_SERVICE_PORT"
+    description: "Service port"
+    required: true
+    parameterType: "int" 
