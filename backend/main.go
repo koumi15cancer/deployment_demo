@@ -3,15 +3,59 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // Response struct for JSON
+// Add fields for A/B/canary debug
+// JWTSub: sub claim from JWT if present
+// UserID: X-User-Id header if present
+// ClientIP: detected client IP
+// HashKey: (optional) hash key used for routing
 type Response struct {
 	Message     string `json:"message"`
 	Version     string `json:"version"`
 	ServiceName string `json:"service_name"`
+	ClientIP    string `json:"client_ip,omitempty"`
+	UserID      string `json:"user_id,omitempty"`
+	JWTSub      string `json:"jwt_sub,omitempty"`
+}
+
+func getClientIP(r *http.Request) string {
+	// Check X-Forwarded-For first
+	xff := r.Header.Get("X-Forwarded-For")
+	if xff != "" {
+		// X-Forwarded-For may contain multiple IPs, use the first
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	// Fallback to RemoteAddr
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		return host
+	}
+	return r.RemoteAddr
+}
+
+func getJWTSub(r *http.Request) string {
+	authHeader := r.Header.Get("Authorization")
+	if strings.HasPrefix(authHeader, "Bearer ") {
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+		if err == nil {
+			if claims, ok := token.Claims.(jwt.MapClaims); ok {
+				if sub, ok := claims["sub"].(string); ok {
+					return sub
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func authMiddleware(next http.Handler) http.Handler {
@@ -74,6 +118,9 @@ func main() {
 			Message:     "Hello from " + serviceName,
 			Version:     serviceVersion,
 			ServiceName: serviceName,
+			ClientIP:    getClientIP(r),
+			UserID:      r.Header.Get("X-User-Id"),
+			JWTSub:      getJWTSub(r),
 		}
 		log.Printf("Sending response: %+v", response)
 		if err := json.NewEncoder(w).Encode(response); err != nil {

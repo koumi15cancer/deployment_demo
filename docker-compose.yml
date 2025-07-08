@@ -57,7 +57,7 @@ services:
     networks:
       - app-network
     environment:
-      - SPLIT_PERCENTAGE=30
+      - SPLIT_PERCENTAGE=50
       - BACKEND_V1_HOST=backend-v1
       - BACKEND_V1_PORT=8080
       - BACKEND_V2_HOST=backend-v2

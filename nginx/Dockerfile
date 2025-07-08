@@ -1,17 +1,17 @@
-FROM openresty/openresty:1.21.4.1-alpine
+FROM openresty/openresty:1.21.4.1-alpine-fat
 
-RUN apk add --no-cache gettext
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories \
+ && apk update && apk add --no-cache curl git unzip
 
-# Remove default config if needed
-RUN rm -f /etc/nginx/conf.d/default.conf
+# Manually install lua-resty-http
+RUN wget https://github.com/ledgetech/lua-resty-http/archive/v0.16.tar.gz && \
+    tar -xzf v0.16.tar.gz && \
+    cp -r lua-resty-http-0.16/lib/resty /usr/local/openresty/lualib/ && \
+    rm -rf v0.16.tar.gz lua-resty-http-0.16
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh /
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Copy nginx config to OpenResty default location
-COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-
 EXPOSE 80
-
 ENTRYPOINT ["/docker-entrypoint.sh"]
