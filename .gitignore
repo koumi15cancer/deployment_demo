@@ -110,3 +110,52 @@ temp/
 *.local
 
 .envrc
+
+# Node.js
+frontend/node_modules/
+frontend/.next/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Go
+backend/bin/
+backend/*.exe
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/*.test
+backend/coverage.out
+
+# Docker
+*.pid
+
+# Terraform
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate
+infra/terraform.tfstate.*
+infra/terraform.tfvars
+infra/terraform.tfvars.json
+infra/crash.log
+infra/plan.out
+
+# macOS
+.DS_Store
+
+# Editor/IDE
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# General/Env
+*.tmp
+*.bak
+.env
+.env.*
+*.local
+terraform-provider-aws*
