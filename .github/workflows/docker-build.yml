@@ -75,6 +75,14 @@ jobs:
           push: true
           tags: ghcr.io/koumi15cancer/deployment_demo/backend-v2:latest
 
+      - name: Build and push backend-shadow
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/koumi15cancer/deployment_demo/backend-shadow:latest
+
       - name: Set output
         id: set_output
         run: echo "backend_built=true" >> $GITHUB_OUTPUT
@@ -132,6 +140,18 @@ jobs:
         run: npm install -g @railway/cli
       - name: Redeploy backend-v2
         run: railway redeploy -s backend-v2  --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  redeploy-backend-shadow:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    if: needs.build-backend.outputs.backend_built == 'true'
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Redeploy backend-shadow
+        run: railway redeploy -s backend-shadow  --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
