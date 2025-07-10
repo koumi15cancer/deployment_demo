@@ -21,15 +21,15 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: ghcr.io/koumi15cancer/deployment_demo/backend-v1:latest
+          image: ghcr.io/koumi15cancer/deployment_demo/backend-v2:latest
           ports:
             - name: http
               containerPort: 8181
           env:
             - name: SERVICE_NAME
-              value: "backend-v1"
+              value: "backend-v2"
             - name: SERVICE_VERSION
-              value: "1.0"
+              value: "2.0"
             - name: PORT
               value: "8080"
           startupProbe:

@@ -98,9 +98,9 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		response := Response{
-			Message:     "Default Page test " + serviceName,
-			Version:     serviceVersion,
-			ServiceName: serviceName,
+			Message: "Default Page test " + serviceName,
+			Version: serviceVersion,
+			// ServiceName: serviceName,
 		}
 		log.Printf("Sending response: %+v", response)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
