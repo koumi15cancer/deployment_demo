@@ -3,6 +3,7 @@
 .env.*
 *.env
 env-*
+istio-*/
 
 # Dependencies
 node_modules/

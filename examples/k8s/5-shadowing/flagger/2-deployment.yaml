@@ -3,33 +3,34 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: myapp
-  namespace: default
+  namespace: staging
 spec:
-  strategy:
-    type: Recreate
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: myapp
+      istio: monitor
   template:
     metadata:
       labels:
         app: myapp
+        istio: monitor
     spec:
       containers:
         - name: myapp
           image: ghcr.io/koumi15cancer/deployment_demo/backend-v1:latest
           env:
             - name: SERVICE_NAME
-              value: "backend-v1"
+              value: v1
             - name: SERVICE_VERSION
               value: "1.0"
             - name: PORT
-              value: "8080"
-          resources:
-            requests:
-              memory: "3Gi"
-              cpu: "2"
-            limits:
-              memory: "3Gi"
-              cpu: "2"
+              value: "8080" 
+              ports:
+            - name: http
+              containerPort: 8080
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5

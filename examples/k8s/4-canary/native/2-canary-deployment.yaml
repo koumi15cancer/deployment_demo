@@ -5,7 +5,7 @@ metadata:
   name: canary-myapp
   namespace: default
 spec:
-  replicas: 10
+  replicas: 0
   selector:
     matchLabels:
       app: myapp
@@ -17,11 +17,17 @@ spec:
       containers:
         - name: myapp
           image: ghcr.io/koumi15cancer/deployment_demo/backend-v2:latest
+          - name: SERVICE_NAME
+              value: "v2"
+            - name: SERVICE_VERSION
+              value: "2.0"
+            - name: PORT
+              value: "8080"
           ports:
             - name: http
-              containerPort: 8181
+              containerPort: 8080
           startupProbe:
             tcpSocket:
-              port: 8181
+              port: 8080
             initialDelaySeconds: 20
             periodSeconds: 5
