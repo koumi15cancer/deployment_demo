@@ -1,4 +1,4 @@
-.PHONY: show-curl-logs run-sample
+.PHONY: show-curl-logs run-sample watch-pods
 
 # Usage:
 #   make run-sample 1   # for 1-rolling-updates
@@ -8,6 +8,9 @@
 
 show-curl-logs:
 	kubectl logs deployment/curl-deployment -n default -f
+
+watch-pods:
+	bash watch_pods_default.sh
 
 run-sample:
 	@if [ -z "$(INDEX)" ]; then \

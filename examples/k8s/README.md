@@ -58,7 +58,15 @@ If you see cluster and Kubernetes master URLs, your cluster is running locally.
    ```
    Replace `1` with the desired sample index (e.g., `2` for `2-recreate`, `3` for `3-blue-green`, etc.).
 
-2. **View Curl Test Logs**
+2. **Watch Pods in Default Namespace**
+
+   Monitor pods in the default namespace in real-time:
+
+   ```sh
+   make watch-pods
+   ```
+
+3. **View Curl Test Logs**
 
    After running a sample, you can watch the logs from the automated curl deployment:
 
